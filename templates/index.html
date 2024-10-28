@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ask the FabiBot</title>
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+  <style type="text/css">
+
+      body {
+          background: #ddd;
+          margin-top: 10px;
+      }
+
+      h3 {
+          font-size: 18px
+      }
+
+      .panel-heading {
+          background: aliceblue;
+      }
+
+      .chat-box {
+          height: 100%;
+          width: 100%;
+          background-color: #fff;
+          overflow: hidden
+      }
+
+      .chats {
+          padding: 30px 15px
+      }
+
+      #chat {
+          display: none;
+      }
+
+      #selection {
+          display: block;
+      }
+
+      .chat-avatar {
+          float: right
+      }
+
+      .chat-avatar .avatar {
+          width: 30px;
+          -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.3);
+          box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      .chat-body {
+          display: block;
+          margin: 10px 30px 0 0;
+          overflow: hidden
+      }
+
+      .chat-body:first-child {
+          margin-top: 0
+      }
+
+      .chat-content {
+          position: relative;
+          display: block;
+          float: right;
+          padding: 8px 15px;
+          margin: 0 20px 10px 0;
+          clear: both;
+          color: #fff;
+          background-color: #62a8ea;
+          border-radius: 4px;
+          -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
+          box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
+      }
+
+      .chat-content:before {
+          position: absolute;
+          top: 10px;
+          right: -10px;
+          width: 0;
+          height: 0;
+          content: '';
+          border: 5px solid transparent;
+          border-left-color: #62a8ea
+      }
+
+      .chat-content > p:last-child {
+          margin-bottom: 0
+      }
+
+      .chat-content + .chat-content:before {
+          border-color: transparent
+      }
+
+      .chat-time {
+          display: block;
+          margin-top: 8px;
+          color: rgba(255, 255, 255, .6)
+      }
+
+      .chat-left .chat-avatar {
+          float: left
+      }
+
+      .chat-left .chat-body {
+          margin-right: 0;
+          margin-left: 30px
+      }
+
+      .chat-left .chat-content {
+          float: left;
+          margin: 0 0 10px 20px;
+          color: #76838f;
+          background-color: #dfe9ef
+      }
+
+      .chat-left .chat-content:before {
+          right: auto;
+          left: -10px;
+          border-right-color: #dfe9ef;
+          border-left-color: transparent
+      }
+
+      .chat-left .chat-content + .chat-content:before {
+          border-color: transparent
+      }
+
+      .chat-left .chat-time {
+          color: #a3afb7
+      }
+
+      .loader {
+        display: inline-grid;
+        padding: 5px;
+      }
+      .loader:before,
+      .loader:after {
+        content: "";
+        grid-area: 1/1;
+        height: 24px;
+        aspect-ratio: 3;
+        --c: #0000 64%,#FFF 66% 98%,#0000 101%;
+        background:
+          radial-gradient(35% 146% at 50% 159%,var(--c)) 0 0,
+          radial-gradient(35% 146% at 50% -59%,var(--c)) 100% 100%;
+        background-size: calc(200%/3) 50%;
+        background-repeat: repeat-x;
+      }
+      .loader:before {
+        -webkit-mask: repeating-linear-gradient(90deg,#FFF 0 8%,#0000 0 15%);
+      }
+      .loader:after {
+        clip-path: inset(0 100% 0 0);
+        animation: l13 1.5s infinite linear;
+      }
+      @keyframes l13{
+        50% {clip-path: inset(0)}
+        to {clip-path: inset(0 0 0 100%)}
+      }
+
+      .panel-footer {
+          padding: 0 30px 15px;
+          background-color: transparent;
+          border-top: 1px solid transparent;
+          border-bottom-right-radius: 2px;
+          border-bottom-left-radius: 2px;
+      }
+
+      .avatar img {
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+          border: 0 none;
+          border-radius: 1000px;
+      }
+
+      .chat-avatar .avatar {
+          width: 30px;
+      }
+
+      .avatar {
+          position: relative;
+          display: inline-block;
+          width: 40px;
+          white-space: nowrap;
+          border-radius: 1000px;
+          vertical-align: bottom;
+      }
+
+      #sidebar {
+          background: white;
+      }
+
+      #sidebar > iframe {
+          border: none
+      }
+  </style>
+</head>
+<body>
+<div class="container bootstrap snippets bootdeys">
+  <div class="col-md-4 col-xs-12">
+    <div class="panel" id="sidebar">
+      <div class="panel-heading">
+        <h3>Video</h3>
+      </div>
+      <iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" height="315" referrerpolicy="strict-origin-when-cross-origin" src="" title="YouTube video player" width="100%" id="video_player"></iframe>
+    </div>
+  </div>
+  <div class="col-md-8 col-xs-12">
+    <!-- Panel Chat -->
+    <div class="panel" id="selection">
+      <div class="panel-heading">
+        <h3>Chat</h3>
+      </div>
+      <div class="panel-body ">
+        <p>To interact with the chatbot, please insert a URL of a YouTube video.</p>
+
+        <div class="input-group">
+          <input class="form-control" id="video_url" placeholder="Enter video URL" type="text" value="https://www.youtube.com/watch?v=XEzRZ35urlk">
+          <span class="input-group-btn">
+            <button class="btn btn-primary" id="send_video" type="button">Send</button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="panel" id="chat">
+      <div class="panel-heading">
+        <h3>Chat</h3>
+      </div>
+      <div class="panel-body chats"></div>
+      <div class="panel-footer">
+        <div class="input-group">
+          <input class="form-control" placeholder="Ask me something" type="text" id="question">
+          <span class="input-group-btn">
+            <button class="btn btn-primary" type="button" id="ask">Send</button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <!-- End Panel Chat -->
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script src="{{url_for('static', filename='scripts/main.js')}}" type="text/javascript"></script>
+</body>
+</html>
