@@ -22,10 +22,8 @@ babel==2.16.0
 backoff==2.2.1
 bcrypt==4.2.0
 beautifulsoup4==4.12.3
-bitsandbytes==0.44.1
 bleach==6.1.0
 blinker==1.8.2
-blis==1.0.1
 bokeh==3.4.3
 build==1.2.2.post1
 cachetools==5.5.0
