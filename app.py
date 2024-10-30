@@ -2,13 +2,15 @@ import os
 
 from flask import Flask, render_template, request, g, session
 
+from gender_controller import get_gender
+
 App = Flask(__name__)
 App.secret_key = os.urandom(24)
 
 
 @App.before_request
 def load_data():
-    if 'video_url' in session:
+    if 'video_id' in session:
         # Lade Transkript und LLM-Objekt aus dem Cache (z.B. Redis)
         # basierend auf der video_url in der Session
         g.transcript = ''
@@ -20,11 +22,16 @@ def index():
     return render_template('index.html')
 
 
-@App.route('/process_video', methods=['POST'])
+@App.route('/gender/<name>', methods=['GET'])
+def gender(name):
+    return get_gender(name)
+
+
+@App.route('/process_video/<id>', methods=['POST'])
 def process_video():
-    video_url = request.form['video_url']
+    video_id = id
     # ... (Transcript holen und LLM initialisieren) ...
-    session['video_url'] = video_url
+    session['video_id'] = video_id
     g.transcript = ''
     g.llm = ''
     return ''
@@ -32,8 +39,8 @@ def process_video():
 
 @App.route('/question', methods=['POST'])
 def question():
-    if 'video_url' in session:
-        video_url = session['video_url']
+    if 'video_id' in session:
+        video_id = session['video_id']
     return None
 
 

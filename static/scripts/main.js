@@ -1,26 +1,68 @@
 const chat = $('#chat');
-const sidebar = $('#sidebar');
+const naming = $('#name');
 const selection = $('#selection');
 const video_player = $('#video_player');
 
-document.getElementById('send_video').addEventListener('click', (event) => {
+/* Set an initial gender as fallback */
+let gender = 'm';
+
+document.getElementById('chatname').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+        const name = document.getElementById('chatname').value
+        getGender(name)
+    }
+});
+
+document.getElementById('send_video').addEventListener('click', sendVideo);
+document.getElementById('video_url').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+        sendVideo()
+    }
+});
+
+document.getElementById('ask').addEventListener('click', sendChat);
+document.getElementById('question').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+        sendChat()
+    }
+});
+
+function getGender(name) {
+    fetch(`gender/${name}`, {
+        method: 'GET'
+    }).then(response => response.text()).then(data => {
+        gender = data;
+        naming.hide();
+        selection.fadeIn();
+    });
+}
+
+function sendVideo() {
     const video_url = $('#video_url').val();
     const params = Object.fromEntries(new URLSearchParams(URL.parse(video_url).search));
 
     if (params['v']) {
-        video_player.attr('src', `https://www.youtube.com/embed/${params['v']}`);
-        selection.hide();
-        chat.fadeIn();
+        processVideo(params['v'])
     } else {
         $('#video_error').show();
     }
-});
+}
 
-document.getElementById('ask').addEventListener('click', (event) => {
-    question = $('#question').val()
+function processVideo(id) {
+    fetch(`process_video/${id}`, {
+        method: 'POST'
+    }).then(response => response.text()).then(data => {
+        video_player.attr('src', `https://www.youtube.com/embed/${id}`);
+        selection.hide();
+        chat.fadeIn();
+    });
+}
+
+function sendChat() {
+    const question = $('#question').val()
     addChat(question)
     addChat('', true)
-});
+}
 
 function addChat(text, answer = false) {
     let chatClass = answer ? "chat" : "chat chat-left";
@@ -29,7 +71,7 @@ function addChat(text, answer = false) {
     let chatHTML = `
         <div class="${chatClass}">
             <div class="chat-avatar avatar avatar-online">
-                <img alt="img" src="/static/images/${answer ? 'ai' : 'm'}.png">
+                <img alt="img" src="/static/images/${answer ? 'ai' : gender}.png">
                 <i></i>
             </div>        
             <div class="chat-body">
@@ -45,33 +87,36 @@ function addChat(text, answer = false) {
     $('.chats').append(chatHTML);
 }
 
-const recordBtn = document.getElementById('recordBtn');
-let mediaRecorder;
-let audioChunks = [];
 
-navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
-    mediaRecorder = new MediaRecorder(stream);
+if (1 === 2) {
+    const recordBtn = document.getElementById('recordBtn');
+    let mediaRecorder;
+    let audioChunks = [];
 
-    mediaRecorder.ondataavailable
-        = event => {
-        audioChunks.push(event.data);
-    };
+    navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
+        mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.onstop = event => {
-        const audioBlob = new Blob(audioChunks, {
-            type: 'audio/wav'
+        mediaRecorder.ondataavailable
+            = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = event => {
+            const audioBlob = new Blob(audioChunks, {
+                type: 'audio/wav'
+            });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioChunks = [];
+        };
+
+        recordBtn.addEventListener('mousedown', () => {
+            mediaRecorder.start();
         });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        audioChunks = [];
-    };
 
-    recordBtn.addEventListener('mousedown', () => {
-        mediaRecorder.start();
+        recordBtn.addEventListener('mouseup', () => {
+            mediaRecorder.stop();
+        });
+    }).catch(err => {
+        console.error('Fehler beim Zugriff auf das Mikrofon:', err);
     });
-
-    recordBtn.addEventListener('mouseup', () => {
-        mediaRecorder.stop();
-    });
-}).catch(err => {
-    console.error('Fehler beim Zugriff auf das Mikrofon:', err);
-});
+}

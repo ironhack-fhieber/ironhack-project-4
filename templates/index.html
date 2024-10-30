@@ -31,12 +31,16 @@
           padding: 30px 15px
       }
 
-      #chat {
-          display: none;
+      #name {
+          display: block;
       }
 
       #selection {
-          display: block;
+          display: none;
+      }
+
+      #chat {
+          display: none;
       }
 
       .chat-avatar {
@@ -208,6 +212,19 @@
   </div>
   <div class="col-md-8 col-xs-12">
     <!-- Panel Chat -->
+    <div class="panel" id="name">
+      <div class="panel-heading">
+        <h3>Name</h3>
+      </div>
+      <div class="panel-body ">
+        <p>Please enter your Name.</p>
+
+        <div class="input-group">
+          <input class="form-control" id="chatname" placeholder="Enter your name" type="text">
+        </div>
+      </div>
+    </div>
+
     <div class="panel" id="selection">
       <div class="panel-heading">
         <h3>Chat</h3>
