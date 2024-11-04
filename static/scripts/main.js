@@ -2,7 +2,7 @@ const chat = $('#chat');
 const naming = $('#name');
 const selection = $('#selection');
 const video_player = $('#video_player');
-const examples = $('#examples');
+const video_change = $('#video_change');
 const modal = $('#record_modal');
 
 const video_input = $('#video_url')
@@ -29,6 +29,17 @@ video_input.on('keydown', function (event) {
         sendVideo()
     }
 });
+
+video_change.on('click', function (event) {
+    $('.chats').html('')
+    video_player.fadeOut();
+    video_change.fadeOut();
+    chat.hide();
+
+    video_input.parent().show()
+    selection.find('.loader').hide();
+    selection.fadeIn();
+})
 
 document.getElementById('ask').addEventListener('click', sendChat);
 document.getElementById('question').addEventListener('keydown', function (event) {
@@ -68,6 +79,8 @@ function processVideo(id) {
     }).then(response => response.json()).then(data => {
         video_player.attr('src', `https://www.youtube.com/embed/${video_id}`);
         video_player.fadeIn();
+        video_input.val('');
+        video_change.fadeIn();
         selection.hide();
         setupChat(data);
     });
@@ -77,13 +90,16 @@ function setupChat(data) {
     const raw_examples = data['examples'].replace(/'/g, '"');
     const example_questions = $.parseJSON(raw_examples);
 
-    let content = '<ul>'
+    const welcome = `Welcome, ${chatter}! 😊 I'm Fabi's Tube Bot, here to help you with anything related to the provided videos. 
+    You can ask me questions, explore more about the content, or choose from some example questions below to get started!`
+
+    let content = `${welcome}<ul class="examples">`
     example_questions.forEach(item => {
         content += `<li onclick="sendChat('${item}')">${item}</li>`
     })
     content += '</ul>'
-    examples.append(content)
-    examples.fadeIn();
+
+    addChat(content, true)
     chat.fadeIn();
 }
 
@@ -120,7 +136,7 @@ function sendChat(voice_text = null) {
 function addChat(text, answer = false) {
     const id = (Math.random() + 1).toString(36).substring(2);
     const chatClass = answer ? "chat" : "chat chat-left";
-    const content = answer ? '<div class="loader"></div>' : `<p>${text}</p>`
+    const content = answer && !text.length ? '<div class="loader"></div>' : `<p>${text}</p>`
 
     let chatHTML = `
         <div id="${id}" class="${chatClass}">
@@ -145,7 +161,7 @@ function addChat(text, answer = false) {
 function generate_answer(response) {
     content = response.answer
     if (response.timestamps) {
-        content += '<ul>'
+        content += '<ul class="timings">'
         response.timestamps.forEach((item, index) => {
             content += `<li onclick="video_position(${item})">Video Position #${index + 1}</li>`
         })

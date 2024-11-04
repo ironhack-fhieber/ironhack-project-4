@@ -101,18 +101,25 @@ body {
     border-left-color: #ff8681
 }
 
-.chat-content ul {
+.chat-content ul.timings {
     list-style-type: none;
     margin: 0;
     padding: 16px 0 0 0;
     overflow: hidden;
 }
 
-.chat-content ul li {
-    float: left;
-    padding-left: 12px;
+.chat-content ul.examples {
+    padding-left: 20px;
+}
+
+.chat-content li {
     font-weight: bold;
     cursor: pointer;
+}
+
+.chat-content ul.timings li {
+    float: left;
+    padding-left: 12px;
 }
 
 .chat-content > p:last-child {
@@ -276,6 +283,12 @@ body {
 #record_modal p {
     display: none;
     text-align: center;
+}
+
+#video_change {
+    display: none;
+    color: black;
+    font-weight: bold;
 }
 
 button#record_voice {
