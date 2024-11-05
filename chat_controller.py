@@ -50,7 +50,7 @@ def process_video(id):
 
     chunks_with_metadata = create_chunks(raw_transcript)
     vectorstore = create_vectorstore(chunks_with_metadata)
-    qa_chain = create_qa_chain(vectorstore, tracer)
+    qa_chain = create_qa_chain(vectorstore, tracer, id)
     examples = create_example_questions(qa_chain, video_title)
 
     return qa_chain, video_title, examples
@@ -123,13 +123,13 @@ def create_vectorstore(chunks_with_metadata):
     """
 
     embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY)
-    texts = [chunk["content"] for chunk in chunks_with_metadata]
-    metadata = [{"timestamp": chunk["timestamp"]} for chunk in chunks_with_metadata]
+    texts = [chunk['content'] for chunk in chunks_with_metadata]
+    metadata = [{'timestamp': chunk['timestamp']} for chunk in chunks_with_metadata]
 
     return FAISS.from_texts(texts, embeddings, metadatas=metadata)
 
 
-def create_qa_chain(vectorstore, tracer):
+def create_qa_chain(vectorstore, tracer, video_id):
     """Creates a question-answering chain.
 
     This function sets up a RetrievalQA chain using the provided vectorstore,
@@ -139,22 +139,23 @@ def create_qa_chain(vectorstore, tracer):
     Args:
         vectorstore: The FAISS vectorstore containing the embedded chunks.
         tracer: The LangChain tracer for logging interactions with LangSmith.
+        video_id: The ID of the video.
 
     Returns:
         A RetrievalQA chain instance ready for question answering.
     """
 
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.2, n=3)
+    llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.2, n=3)
 
     # Set up chat memory
     conversational_memory = ConversationBufferWindowMemory(
-        memory_key='youtube_project_history',
+        memory_key=f"youtube_history:{video_id}",
         k=3,
         return_messages=True,
         output_key='result'
     )
 
-    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 4})
+    retriever = vectorstore.as_retriever(search_type='similarity', search_kwargs={'k': 4})
 
     # Set up the RetrievalQA chain with vectorstore and tracer for LangSmith logging
     qa_chain = RetrievalQA.from_chain_type(
@@ -169,7 +170,7 @@ def create_qa_chain(vectorstore, tracer):
     return qa_chain
 
 
-def create_example_questions(qa_chain, video_title):
+def create_example_questions(qa_chain, title):
     """Generates example questions for the video.
 
     This function uses the provided QA chain and video title to generate
@@ -178,15 +179,15 @@ def create_example_questions(qa_chain, video_title):
 
     Args:
         qa_chain: The RetrievalQA chain used for question answering.
-        video_title: The title of the YouTube video.
+        title: The title of the YouTube video.
 
     Returns:
         A list of example questions generated for the video.
     """
 
-    prompt_text = helpers.examples_prompt().format(title=video_title)
-    result = qa_chain.invoke(input=prompt_text, output_key="result")
-    example_questions = result["result"]
+    prompt_text = helpers.examples_prompt().format(title=title)
+    result = qa_chain.invoke(input=prompt_text, output_key='result')
+    example_questions = result['result']
 
     return example_questions
 
@@ -210,9 +211,9 @@ def ask_question_with_timestamp(qa_chain, prompt_text):
     """
 
     # Run the query to get the response and source documents
-    result = qa_chain.invoke(input=prompt_text, output_key="result")
-    answer_text = helpers.clear_text(result["result"])
-    sources = result["source_documents"]
+    result = qa_chain.invoke(input=prompt_text, output_key='result')
+    answer_text = helpers.clear_text(result['result'])
+    sources = result['source_documents']
 
     # define timestamps
     timestamps = None
@@ -220,4 +221,4 @@ def ask_question_with_timestamp(qa_chain, prompt_text):
         timestamps = helpers.select_timestamps(sources)
 
     # Append timestamp information to the answer
-    return {"answer": answer_text, "timestamps": timestamps}
+    return {'answer': answer_text, 'timestamps': timestamps}
