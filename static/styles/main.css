@@ -1,15 +1,15 @@
 body {
     margin-top: 10px;
     background-color: #935d8c;
-    background-image: -moz-linear-gradient(45deg, #ff5b54 15%, #FFFFFF 85%);
-    background-image: -webkit-linear-gradient(45deg, #ff5b54 15%, #FFFFFF 85%);
-    background-image: -ms-linear-gradient(45deg, #ff5b54 15%, #FFFFFF 85%);
-    background-image: linear-gradient(45deg, #ff5b54 15%, #FFFFFF 85%);
+    background-image: -moz-linear-gradient(45deg, #df1515 15%, #FFFFFF 85%);
+    background-image: -webkit-linear-gradient(45deg, #df1515 15%, #FFFFFF 85%);
+    background-image: -ms-linear-gradient(45deg, #df1515 15%, #FFFFFF 85%);
+    background-image: linear-gradient(45deg, #df1515 15%, #FFFFFF 85%);
     min-height: 100vh;
 }
 
 .panel-heading {
-    background: #ff5b54;
+    background: #df1515;
 }
 
 .panel-heading h3 {
@@ -45,11 +45,11 @@ body {
 }
 
 #selection .loader:after {
-    --c: #0000 64%, #ff5b54 66% 98%, #0000 101%;
+    --c: #0000 64%, #df1515 66% 98%, #0000 101%;
 }
 
 #selection .loader:before {
-    -webkit-mask: repeating-linear-gradient(90deg, #ff5b54 0 8%, #0000 0 15%);
+    -webkit-mask: repeating-linear-gradient(90deg, #df1515 0 8%, #0000 0 15%);
 }
 
 #chat {
@@ -270,13 +270,13 @@ body {
 }
 
 .btn-primary {
-    background: #ff5b54;
+    background: #df1515;
     border-color: #e64b43;
     color: white;
 }
 
 .btn-primary:hover, .btn-primary:focus {
-    background: #e64b43;
+    background: #ff5b54;
     border-color: #e64b43;
 }
 

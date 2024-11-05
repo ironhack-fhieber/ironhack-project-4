@@ -1,7 +1,7 @@
 import os
 
 from langchain.callbacks import LangChainTracer
-from langchain.chains import RetrievalQA
+from langchain.chains import ConversationalRetrievalChain, RetrievalQA
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -50,10 +50,10 @@ def process_video(id):
 
     chunks_with_metadata = create_chunks(raw_transcript)
     vectorstore = create_vectorstore(chunks_with_metadata)
-    qa_chain = create_qa_chain(vectorstore, tracer, id)
-    examples = create_example_questions(qa_chain, video_title)
+    chains = create_chains(vectorstore, tracer)
+    examples = create_example_questions(chains['examples'], video_title)
 
-    return qa_chain, video_title, examples
+    return chains['questions'], video_title, examples
 
 
 def create_chunks(raw_transcript):
@@ -129,7 +129,7 @@ def create_vectorstore(chunks_with_metadata):
     return FAISS.from_texts(texts, embeddings, metadatas=metadata)
 
 
-def create_qa_chain(vectorstore, tracer, video_id):
+def create_chains(vectorstore, tracer):
     """Creates a question-answering chain.
 
     This function sets up a RetrievalQA chain using the provided vectorstore,
@@ -139,38 +139,46 @@ def create_qa_chain(vectorstore, tracer, video_id):
     Args:
         vectorstore: The FAISS vectorstore containing the embedded chunks.
         tracer: The LangChain tracer for logging interactions with LangSmith.
-        video_id: The ID of the video.
 
     Returns:
-        A RetrievalQA chain instance ready for question answering.
+        A ConversationalRetrievalChain chain instance ready for question answering.
     """
 
     llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.2, n=3)
 
     # Set up chat memory
     conversational_memory = ConversationBufferWindowMemory(
-        memory_key=f"youtube_history:{video_id}",
+        memory_key='chat_history',
         k=3,
         return_messages=True,
-        output_key='result'
+        output_key='answer'
     )
 
     retriever = vectorstore.as_retriever(search_type='similarity', search_kwargs={'k': 4})
 
-    # Set up the RetrievalQA chain with vectorstore and tracer for LangSmith logging
-    qa_chain = RetrievalQA.from_chain_type(
+    # ConversationalRetrievalChain chain with vectorstore, memory and tracer for LangSmith logging
+    # Used for chat
+    qa_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
-        chain_type="stuff",
-        memory=conversational_memory,
         retriever=retriever,
         return_source_documents=True,
+        memory=conversational_memory,
         callbacks=[tracer]
     )
 
-    return qa_chain
+    # RetrievalQA chain with vectorstore and tracer for LangSmith logging
+    # Used for initial example creation
+    example = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type='stuff',
+        retriever=retriever,
+        callbacks=[tracer]
+    )
+
+    return {'questions': qa_chain, 'examples': example}
 
 
-def create_example_questions(qa_chain, title):
+def create_example_questions(chain, title):
     """Generates example questions for the video.
 
     This function uses the provided QA chain and video title to generate
@@ -178,7 +186,7 @@ def create_example_questions(qa_chain, title):
     It leverages a predefined prompt template to guide the question generation process.
 
     Args:
-        qa_chain: The RetrievalQA chain used for question answering.
+        chain: The RetrievalQA chain used for question answering.
         title: The title of the YouTube video.
 
     Returns:
@@ -186,7 +194,7 @@ def create_example_questions(qa_chain, title):
     """
 
     prompt_text = helpers.examples_prompt().format(title=title)
-    result = qa_chain.invoke(input=prompt_text, output_key='result')
+    result = chain.invoke(input=prompt_text, output_key='result')
     example_questions = result['result']
 
     return example_questions
@@ -200,7 +208,7 @@ def ask_question_with_timestamp(qa_chain, prompt_text):
     If the answer is "I don't know.", timestamps will be None.
 
     Args:
-        qa_chain: The RetrievalQA chain used for question answering.
+        qa_chain: The ConversationalRetrievalChain chain used for question answering.
         prompt_text: The question to be asked.
 
     Returns:
@@ -210,9 +218,12 @@ def ask_question_with_timestamp(qa_chain, prompt_text):
                            is "I don't know.".
     """
 
+    # Get the messages of the memory
+    chat_history = qa_chain.memory.chat_memory.messages
+
     # Run the query to get the response and source documents
-    result = qa_chain.invoke(input=prompt_text, output_key='result')
-    answer_text = helpers.clear_text(result['result'])
+    result = qa_chain({'question': prompt_text, 'chat_history': chat_history})
+    answer_text = helpers.clear_text(result['answer'])
     sources = result['source_documents']
 
     # define timestamps

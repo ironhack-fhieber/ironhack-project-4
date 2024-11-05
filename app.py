@@ -57,7 +57,7 @@ def question():
 
     video_id = data.get('id')
     chatter = data.get('chatter')
-    question = data.get('question')
+    question_text = data.get('question')
 
     # Retrieve the instance with error handling
     instance = manager.get_chain(video_id)
@@ -67,7 +67,7 @@ def question():
     title = instance['title']
     qa_chain = instance['qa_chain']
 
-    prompt = helpers.create_prompt(title, chatter, question)
+    prompt = helpers.create_prompt(title, chatter, question_text)
     response = cc.ask_question_with_timestamp(qa_chain, prompt)
     return jsonify(response)
 

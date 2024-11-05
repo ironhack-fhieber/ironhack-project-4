@@ -1,5 +1,6 @@
 import speech_recognition as sr
 
+
 def transcribe_audio(audio) -> str:
     """
     Transcribes audio data to text using Google's speech recognition API.

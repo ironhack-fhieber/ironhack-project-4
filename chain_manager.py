@@ -2,7 +2,6 @@ class ChainManager:
     def __init__(self):
         self.llm_list = []
 
-
     def add_chain(self, id, title, qa_chain, examples):
         """
         Adds a new entry to llm_list if the given ID
@@ -16,7 +15,6 @@ class ChainManager:
 
         self.llm_list.append({'id': id, 'qa_chain': qa_chain, 'title': title, 'examples': examples})
         print(f"Added new entry with ID {id}.")
-
 
     def get_chain(self, id):
         """
@@ -35,7 +33,6 @@ class ChainManager:
 
         print(f"No entry found with ID {id}.")
         return None
-
 
     def is_new(self, id):
         """Checks if a given ID is new (not already present) in the llm_list.
