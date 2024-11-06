@@ -1,4 +1,4 @@
-[logo](blob/main/static/images/logo.png?raw=true)
+[logo](static/images/logo.png?raw=true)
 
 # Ironhack Project: Fabi’s Tube Buddy
 

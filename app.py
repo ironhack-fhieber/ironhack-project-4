@@ -43,12 +43,20 @@ def process_video(id):
 
 @App.route('/process_voice', methods=['POST'])
 def process_voice():
-    file = request.files['file']  # Datei aus dem Request-Objekt erhalten
+    file = request.files['file']
 
     tmp_path = f"uploads/{helpers.generate_name()}.wav"
     file.save(tmp_path)
     audio_path = helpers.convert_wav(tmp_path)
-    return vc.convert_audio_to_text(audio_path)
+
+    # Get the text of the question
+    text = vc.convert_audio_to_text(audio_path)
+    
+    # Remove the temporary files
+    os.remove(tmp_path)
+    os.remove(audio_path)
+
+    return text
 
 
 @App.route('/question', methods=['POST'])

@@ -33,11 +33,8 @@ def clear_text(raw_text):
         str: The cleaned text.
     """
 
-    # Remove bracketed content using regex
-    raw_text = re.sub(r"\[.*?\]", "", raw_text)
-
-    # Replace newline and non-breaking space characters with spaces
-    raw_text = raw_text.replace("\n", " ").replace("\xa0", " ")
+    # Remove bracketed content and replace unwanted characters with spaces
+    raw_text = re.sub(r"\[.*?\]|\n|\r|\xa0|\x08", " ", raw_text)
 
     # Remove speaker indicators using regex
     raw_text = re.sub(r">>.+?:", "", raw_text)
@@ -182,6 +179,7 @@ def create_prompt(title, chatter, question):
     This is a helper function that utilizes the `prompt` function
     to create a formatted prompt for an AI assistant, incorporating
     the video title, chatter's name, and the specific question.
+    The question will be cleaned for unwanted characters.
 
     Args:
         title (str): The title of the video.
@@ -192,4 +190,4 @@ def create_prompt(title, chatter, question):
         str: The formatted prompt string.
     """
 
-    return prompt().format(title=title, chatter=chatter, question_text=question)
+    return prompt().format(title=title, chatter=chatter, question_text=clear_text(question))
