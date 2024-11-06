@@ -5,3 +5,4 @@ uploads/
 !uploads/.keep
 chroma_db/*
 !chroma_db/.keep
+*.pptx

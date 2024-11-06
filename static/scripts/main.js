@@ -60,16 +60,44 @@ function getGender() {
 }
 
 function sendVideo() {
-    video_input.parent().hide()
     selection.find('.loader').attr('style', 'display: inline-grid');
+    video_input.parent().hide()
     const video_url = video_input.val();
-    const params = Object.fromEntries(new URLSearchParams(URL.parse(video_url).search));
+    const url = new URL(video_url);
 
-    if (params['v']) {
-        video_id = params['v']
+    if (url.host === 'youtu.be') {
+        video_id = url.pathname.split('/').pop();
+    } else {
+        const params = Object.fromEntries(new URLSearchParams(url.search));
+        if (params['v']) {
+            video_id = params['v'];
+        }
+    }
+
+    if (video_id) {
         processVideo()
     } else {
         $('#video_error').show();
+    }
+}
+
+function test(video_url) {
+    const url = new URL(video_url);
+    let video_id = null;
+
+    if (url.host === 'youtu.be') {
+        video_id = url.pathname.split('/').pop();
+    } else {
+        const params = Object.fromEntries(new URLSearchParams(url.search));
+        if (params['v']) {
+            video_id = params['v'];
+        }
+    }
+
+    if (video_id) {
+        return video_id;
+    } else {
+        return false
     }
 }
 

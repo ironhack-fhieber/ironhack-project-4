@@ -51,7 +51,7 @@ def process_voice():
 
     # Get the text of the question
     text = vc.convert_audio_to_text(audio_path)
-    
+
     # Remove the temporary files
     os.remove(tmp_path)
     os.remove(audio_path)
