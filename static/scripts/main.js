@@ -5,11 +5,11 @@ const selection = $('#selection');
 const video_input = $('#video_url')
 const video_player = $('#video_player');
 const video_change = $('#video_change');
+const video_button = $('#send_video')
 const video_error = $('#video_error');
 
 const modal = $('#record_modal');
 const question_input = $('#question')
-const video_button = $('#send_video')
 
 let chatter;
 let video_id;
@@ -30,12 +30,13 @@ video_input.on('keydown', function (event) {
 
 video_change.on('click', function (event) {
     $('.chats').html('')
-    video_player.fadeOut();
-    video_change.fadeOut();
+    video_player.hide();
+    video_change.hide();
     chat.hide();
 
     resetLoader();
     selection.fadeIn();
+    video_input.focus()
 })
 
 document.getElementById('ask').addEventListener('click', sendChat);
@@ -46,6 +47,7 @@ document.getElementById('question').addEventListener('keydown', function (event)
 });
 
 function requestVideo() {
+    chatter = document.getElementById('chatname').value
     naming.hide();
     selection.fadeIn();
 }
