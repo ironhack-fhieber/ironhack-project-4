@@ -34,11 +34,19 @@ def gender(name):
 @App.route('/process_video/<id>', methods=['POST'])
 def process_video(id):
     if not manager.is_new(id):
-        chain, title, examples = cc.process_video(id)
-        manager.add_chain(id, title, chain, examples)
+        chain, ex_chain, title, examples = cc.process_video(id)
+        manager.add_chain(id, title, chain, ex_chain, examples)
 
     instance = manager.get_chain(id)
-    return jsonify({'title': instance['title'], 'examples': instance['examples']}), 201
+    examples = instance['examples']
+
+    # create examples if not yet created
+    if not examples:
+        new_examples = cc.create_example_questions(instance['ex_chain'], instance['title'])
+        manager.update_examples(id, new_examples)
+        examples = new_examples
+
+    return jsonify({'title': instance['title'], 'examples': examples}), 201
 
 
 @App.route('/process_voice', methods=['POST'])
