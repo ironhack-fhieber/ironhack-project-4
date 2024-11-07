@@ -1,3 +1,7 @@
+"""
+Collection of needed helper around te flask app and it's controllers
+"""
+
 import ast
 import random
 import re
@@ -19,7 +23,11 @@ def get_video_title(video_id):
     Returns:
         str: The title of the YouTube video.
     """
-    soup = BeautifulSoup(requests.get(f"https://www.youtube.com/watch?v={video_id}").text, 'html.parser')
+
+    # Get YouTube HTML page
+    text = requests.get(f"https://www.youtube.com/watch?v={video_id}", timeout=8).text
+    soup = BeautifulSoup(text, 'html.parser')
+
     return soup.title.string.replace(" - YouTube", "").strip()
 
 
@@ -55,7 +63,7 @@ def select_timestamps(sources):
     Selects relevant timestamps from a list of source documents.
 
     Args:
-        sources (list): A list of source documents, each containing a metadata dictionary with a "timestamp" key.
+        sources (list): Source documents, containing metadata dictionary with a "timestamp" key.
 
     Returns:
         list: A list of selected timestamps, sorted in ascending order and deduplicated.
@@ -195,18 +203,18 @@ def create_prompt(title, chatter, question):
 
 
 def parse_array_string(array_string):
-  """
-  Parses a string representation of an array into a Python list.
+    """
+    Parses a string representation of an array into a Python list.
 
-  Args:
-    array_string: The string containing an array (e.g., "['Question', 'Another question', ...]").
+    Args:
+        array_string: The string containing an array (e.g., "['Question', 'Question 2', ...]").
 
-  Returns:
-    A Python list representing the parsed array, or None if parsing fails.
-  """
+    Returns:
+        A Python list representing the parsed array, or None if parsing fails.
+    """
 
-  try:
-    return ast.literal_eval(array_string)
-  except (ValueError, SyntaxError) as e:
-    print(f"Error parsing array string: {e}")
-    return []
+    try:
+        return ast.literal_eval(array_string)
+    except (ValueError, SyntaxError) as e:
+        print(f"Error parsing array string: {e}")
+        return []

@@ -1,5 +1,10 @@
+"""
+Chat Controller creates the llm, vectorstore and chains and the
+creation of the transcript of YouTube videos, as well
+the Functionality of a conversation chatbot about videos.
+"""
+
 import os
-import time
 
 from langchain.callbacks import LangChainTracer
 from langchain.chains import ConversationalRetrievalChain, RetrievalQA
@@ -16,7 +21,7 @@ import helpers
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 
-def process_video(id):
+def process_video(video_id):
     """Processes a YouTube video to enable question answering.
 
     This function takes a YouTube video ID, retrieves the transcript,
@@ -24,7 +29,7 @@ def process_video(id):
     It also generates example questions based on the video title.
 
     Args:
-       id: The YouTube video ID.
+       video_id: The YouTube video ID.
 
     Returns:
         A tuple containing:
@@ -33,25 +38,25 @@ def process_video(id):
             - examples: Example questions generated for the video.
     """
 
-    video_title = helpers.get_video_title(id)
+    video_title = helpers.get_video_title(video_id)
     languages = ['en', 'de', 'es', 'pt']
     try:
-        raw_transcript = YouTubeTranscriptApi.get_transcript(id, languages=languages)
+        raw = YouTubeTranscriptApi.get_transcript(video_id, languages=languages)
     except TranscriptsDisabled:
         proxies = {'http': 'http://94.186.213.73:7212',
                    'https': 'http://94.186.213.73:7212'}
-        raw_transcript = YouTubeTranscriptApi.get_transcript(id, languages=languages, proxies=proxies)
+        raw = YouTubeTranscriptApi.get_transcript(video_id, languages=languages, proxies=proxies)
 
     # Initialize LangSmith client and tracer
     client = Client()
     tracer = LangChainTracer(client=client)
 
-    chunks_with_metadata = create_chunks(raw_transcript)
+    chunks_with_metadata = create_chunks(raw)
     vectorstore = create_vectorstore(chunks_with_metadata)
     chains = create_chains(vectorstore, tracer)
     examples = create_example_questions(chains['examples'], video_title)
 
-    return chains['questions'], chains['examples'], video_title, examples
+    return chains, video_title, examples
 
 
 def create_chunks(raw_transcript):
@@ -89,7 +94,8 @@ def create_chunks(raw_transcript):
         # Check if adding the current text would exceed the max_chunk_length
         if len(current_text) + len(entry['text']) + 1 > max_chunk_length:
             # If it does, save the current chunk and reset the variables
-            chunks_with_metadata.append({'content': helpers.clear_text(current_text), 'timestamp': current_start})
+            content = helpers.clear_text(current_text)
+            chunks_with_metadata.append({'content': content, 'timestamp': current_start})
             current_text = ""
             current_start = entry['start']
 
@@ -98,7 +104,8 @@ def create_chunks(raw_transcript):
 
     # After the loop, ensure any remaining text is added as a final chunk
     if current_text:
-        chunks_with_metadata.append({'content': helpers.clear_text(current_text), 'timestamp': current_start})
+        content = helpers.clear_text(current_text)
+        chunks_with_metadata.append({'content': content, 'timestamp': current_start})
 
     return chunks_with_metadata
 
@@ -139,7 +146,8 @@ def create_chains(vectorstore, tracer):
         tracer: The LangChain tracer for logging interactions with LangSmith.
 
     Returns:
-        dict: A dictionary containing chains 'questions' for question answering and 'examples' for example creation.
+        dict: A dictionary containing chains 'questions' for question answering
+              and 'examples' for example creation.
     """
 
     llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.2, n=3)
