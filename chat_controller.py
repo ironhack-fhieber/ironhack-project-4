@@ -12,9 +12,6 @@ from youtube_transcript_api._errors import TranscriptsDisabled
 
 import helpers
 
-video_title = ''
-raw_transcript = None
-
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 
@@ -52,6 +49,8 @@ def process_video(id):
     vectorstore = create_vectorstore(chunks_with_metadata)
     chains = create_chains(vectorstore, tracer)
     examples = create_example_questions(chains['examples'], video_title)
+    if examples.startsWith("I'm sorry"):
+        examples = create_example_questions(chains['examples'], video_title)
 
     return chains['questions'], video_title, examples
 
