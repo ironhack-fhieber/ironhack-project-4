@@ -6,7 +6,8 @@ import chat_controller as cc
 import helpers
 import voice_controller as vc
 from chain_manager import ChainManager
-from gender_controller import get_gender
+
+# from gender_controller import get_gender # disabled for deployment
 
 App = Flask(__name__)
 App.secret_key = os.urandom(24)
@@ -28,7 +29,8 @@ def index():
 
 @App.route('/gender/<name>', methods=['GET'])
 def gender(name):
-    return get_gender(name)
+    # return get_gender(name) # disabled for deployment
+    return 'm'
 
 
 @App.route('/process_video/<id>', methods=['POST'])
