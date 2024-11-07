@@ -1,26 +1,23 @@
 const chat = $('#chat');
 const naming = $('#name');
 const selection = $('#selection');
+
+const video_input = $('#video_url')
 const video_player = $('#video_player');
 const video_change = $('#video_change');
 const video_error = $('#video_error');
+
 const modal = $('#record_modal');
-
-const video_input = $('#video_url')
-const video_button = $('#send_video')
-
 const question_input = $('#question')
-
-/* Set an initial gender as fallback */
-let gender = 'm';
+const video_button = $('#send_video')
 
 let chatter;
 let video_id;
 
-$('#send_name').on('click', getGender);
+$('#send_name').on('click', requestVideo);
 $('#chatname').on('keydown', function (event) {
     if (event.key === 'Enter') {
-        getGender()
+        requestVideo()
     }
 });
 
@@ -48,15 +45,9 @@ document.getElementById('question').addEventListener('keydown', function (event)
     }
 });
 
-function getGender() {
-    chatter = document.getElementById('chatname').value
-    fetch(`gender/${chatter}`, {
-        method: 'GET'
-    }).then(response => response.text()).then(data => {
-        gender = data;
-        naming.hide();
-        selection.fadeIn();
-    });
+function requestVideo() {
+    naming.hide();
+    selection.fadeIn();
 }
 
 function sendVideo() {
@@ -155,7 +146,7 @@ function addChat(text, answer = false) {
     let chatHTML = `
         <div id="${id}" class="${chatClass}">
             <div class="chat-avatar avatar avatar-online">
-                <img alt="img" src="/static/images/${answer ? 'ai' : gender}.png">
+                <img alt="img" src="/static/images/${answer ? 'ai' : 'm'}.png">
                 <i></i>
             </div>        
             <div class="chat-body">

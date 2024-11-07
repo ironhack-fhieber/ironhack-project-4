@@ -11,7 +11,6 @@ import helpers
 import voice_controller as vc
 from chain_manager import ChainManager
 
-# from gender_controller import get_gender (Disabled on Heroku)
 
 App = Flask(__name__)
 App.secret_key = os.urandom(24)
@@ -46,21 +45,6 @@ def index():
     """
 
     return render_template('index.html')
-
-
-@App.route('/gender/<name>', methods=['GET'])
-def gender(_name):
-    """
-    Get the predicted gender for a given name. (Disabled on Heroku)
-
-    Args:
-        _name (str): The name to predict the gender for.
-
-    Returns:
-        str: The predicted gender ('m' or 'f').
-    """
-
-    return "m"
 
 
 @App.route('/process_video/<video_id>', methods=['POST'])
