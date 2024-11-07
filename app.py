@@ -1,3 +1,7 @@
+"""
+App definition for Flask Server endpoints
+"""
+
 import os
 
 from flask import Flask, render_template, request, jsonify
@@ -16,6 +20,16 @@ manager = ChainManager()
 
 @App.before_request
 def load_data():
+    """
+    Loads environment variables before each request.
+
+    This function sets environment variables required by LangChain,
+    including the project name, tracing settings, and a workaround
+    for potential library conflicts.
+
+    It's executed before every request to the Flask application.
+    """
+
     os.environ["LANGCHAIN_PROJECT"] = 'youtube-project'
     os.environ['LANGCHAIN_TRACING_V2'] = 'true'
     os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -23,27 +37,54 @@ def load_data():
 
 @App.route('/')
 def index():
+    """
+    Renders the index page.
+
+    Returns:
+        str: The HTML content of the index page.
+    """
+
     return render_template('index.html')
 
 
 @App.route('/gender/<name>', methods=['GET'])
 def gender(name):
+    """
+    Get the predicted gender for a given name.
+
+    Args:
+        name (str): The name to predict the gender for.
+
+    Returns:
+        str: The predicted gender ('m' or 'f').
+    """
+
     return get_gender(name)
 
 
-@App.route('/process_video/<id>', methods=['POST'])
-def process_video(id):
-    if not manager.is_new(id):
-        chain, ex_chain, title, examples = cc.process_video(id)
-        manager.add_chain(id, title, chain, ex_chain, examples)
+@App.route('/process_video/<video_id>', methods=['POST'])
+def process_video(video_id):
+    """
+    Process a YouTube video and initialize the QA chain.
 
-    instance = manager.get_chain(id)
+    Args:
+        video_id (str): The ID of the YouTube video.
+
+    Returns:
+        tuple: A tuple containing the JSON response and status code.
+    """
+
+    if not manager.is_new(video_id):
+        chains, title, examples = cc.process_video(video_id)
+        manager.add_chain(video_id, title, chains, examples)
+
+    instance = manager.get_chain(video_id)
     examples = instance['examples']
 
     # create examples if not yet created
     if not examples:
         new_examples = cc.create_example_questions(instance['ex_chain'], instance['title'])
-        manager.update_examples(id, new_examples)
+        manager.update_examples(video_id, new_examples)
         examples = new_examples
 
     return jsonify({'title': instance['title'], 'examples': examples}), 201
@@ -51,6 +92,13 @@ def process_video(id):
 
 @App.route('/process_voice', methods=['POST'])
 def process_voice():
+    """
+    Process voice input and convert it to text.
+
+    Returns:
+        str: The text extracted from the voice input.
+    """
+
     file = request.files['file']
 
     tmp_path = f"uploads/{helpers.generate_name()}.wav"
@@ -69,6 +117,13 @@ def process_voice():
 
 @App.route('/question', methods=['POST'])
 def question():
+    """
+    Answer a question based on the context of a YouTube video.
+
+    Returns:
+        tuple: A tuple containing the JSON response and status code.
+    """
+
     data = request.get_json()
 
     video_id = data.get('id')
