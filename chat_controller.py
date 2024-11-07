@@ -49,7 +49,7 @@ def process_video(id):
     vectorstore = create_vectorstore(chunks_with_metadata)
     chains = create_chains(vectorstore, tracer)
     examples = create_example_questions(chains['examples'], video_title)
-    if examples.startsWith("I'm sorry"):
+    if examples.startswith("I'm sorry"):
         examples = create_example_questions(chains['examples'], video_title)
 
     return chains['questions'], video_title, examples
