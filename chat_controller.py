@@ -51,12 +51,7 @@ def process_video(id):
     chains = create_chains(vectorstore, tracer)
     examples = create_example_questions(chains['examples'], video_title)
 
-    # Sometimes the model does not find any information, sleep and try again
-    if examples.startswith("I'm sorry"):
-        time.sleep(3)
-        examples = create_example_questions(chains['examples'], video_title)
-
-    return chains['questions'], video_title, examples
+    return chains['questions'], chains['examples'], video_title, examples
 
 
 def create_chunks(raw_transcript):
@@ -144,7 +139,7 @@ def create_chains(vectorstore, tracer):
         tracer: The LangChain tracer for logging interactions with LangSmith.
 
     Returns:
-        A ConversationalRetrievalChain chain instance ready for question answering.
+        dict: A dictionary containing chains 'questions' for question answering and 'examples' for example creation.
     """
 
     llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.2, n=3)
@@ -198,7 +193,7 @@ def create_example_questions(chain, title):
 
     prompt_text = helpers.examples_prompt().format(title=title)
     result = chain.invoke(input=prompt_text, output_key='result')
-    example_questions = result['result']
+    example_questions = helpers.parse_array_string(result['result'])
 
     return example_questions
 

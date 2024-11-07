@@ -1,3 +1,4 @@
+import ast
 import random
 import re
 import string
@@ -191,3 +192,21 @@ def create_prompt(title, chatter, question):
     """
 
     return prompt().format(title=title, chatter=chatter, question_text=clear_text(question))
+
+
+def parse_array_string(array_string):
+  """
+  Parses a string representation of an array into a Python list.
+
+  Args:
+    array_string: The string containing an array (e.g., "['Question', 'Another question', ...]").
+
+  Returns:
+    A Python list representing the parsed array, or None if parsing fails.
+  """
+
+  try:
+    return ast.literal_eval(array_string)
+  except (ValueError, SyntaxError) as e:
+    print(f"Error parsing array string: {e}")
+    return []

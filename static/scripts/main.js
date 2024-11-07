@@ -100,28 +100,22 @@ function processVideo() {
 }
 
 function setupChat(data) {
-    const raw_examples = data['examples'].replace(/'/g, '"');
-    try {
-        const example_questions = $.parseJSON(raw_examples);
+    const example_questions = data['examples'];
+    let content = `Welcome, ${chatter}! 😊 I'm Fabi's Tube Buddy, here to help you with anything related to the provided videos. 
+    You can ask me questions and explore more about the content. `
 
-        const welcome = `Welcome, ${chatter}! 😊 I'm Fabi's Tube Bot, here to help you with anything related to the provided videos. 
-    You can ask me questions, explore more about the content, or choose from some example questions below to get started!`
-
-        let content = `${welcome}<ul class="examples">`
+    if (example_questions.length) {
+        content += 'You can also choose from some example questions below to get started!'
+        content += `<ul class="examples">`
         example_questions.forEach(item => {
             content += `<li onclick="sendChat('${item}')">${item}</li>`
         })
         content += '</ul>'
-
-        addChat(content, true)
-        chat.fadeIn();
-    } catch (error) {
-        console.error('Error processing examples:', error);
-
-        resetLoader();
-        video_error.show();
-        selection.show();
     }
+
+    addChat(content, true)
+    chat.fadeIn();
+
 }
 
 function sendRecord(formData) {
