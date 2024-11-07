@@ -291,6 +291,10 @@ body {
     font-weight: bold;
 }
 
+#video_error {
+    display: none;
+}
+
 button#record_voice {
     font-size: 28px;
     width: 56px;

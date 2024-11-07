@@ -3,6 +3,7 @@ const naming = $('#name');
 const selection = $('#selection');
 const video_player = $('#video_player');
 const video_change = $('#video_change');
+const video_error = $('#video_error');
 const modal = $('#record_modal');
 
 const video_input = $('#video_url')
@@ -36,8 +37,7 @@ video_change.on('click', function (event) {
     video_change.fadeOut();
     chat.hide();
 
-    video_input.parent().show()
-    selection.find('.loader').hide();
+    resetLoader();
     selection.fadeIn();
 })
 
@@ -81,27 +81,7 @@ function sendVideo() {
     }
 }
 
-function test(video_url) {
-    const url = new URL(video_url);
-    let video_id = null;
-
-    if (url.host === 'youtu.be') {
-        video_id = url.pathname.split('/').pop();
-    } else {
-        const params = Object.fromEntries(new URLSearchParams(url.search));
-        if (params['v']) {
-            video_id = params['v'];
-        }
-    }
-
-    if (video_id) {
-        return video_id;
-    } else {
-        return false
-    }
-}
-
-function processVideo(id) {
+function processVideo() {
     fetch(`process_video/${video_id}`, {
         method: 'POST'
     }).then(response => response.json()).then(data => {
@@ -111,24 +91,37 @@ function processVideo(id) {
         video_change.fadeIn();
         selection.hide();
         setupChat(data);
+    }).catch(error => {
+        console.error('Error processing video:', error);
+
+        resetLoader();
+        video_error.show();
     });
 }
 
 function setupChat(data) {
     const raw_examples = data['examples'].replace(/'/g, '"');
-    const example_questions = $.parseJSON(raw_examples);
+    try {
+        const example_questions = $.parseJSON(raw_examples);
 
-    const welcome = `Welcome, ${chatter}! 😊 I'm Fabi's Tube Bot, here to help you with anything related to the provided videos. 
+        const welcome = `Welcome, ${chatter}! 😊 I'm Fabi's Tube Bot, here to help you with anything related to the provided videos. 
     You can ask me questions, explore more about the content, or choose from some example questions below to get started!`
 
-    let content = `${welcome}<ul class="examples">`
-    example_questions.forEach(item => {
-        content += `<li onclick="sendChat('${item}')">${item}</li>`
-    })
-    content += '</ul>'
+        let content = `${welcome}<ul class="examples">`
+        example_questions.forEach(item => {
+            content += `<li onclick="sendChat('${item}')">${item}</li>`
+        })
+        content += '</ul>'
 
-    addChat(content, true)
-    chat.fadeIn();
+        addChat(content, true)
+        chat.fadeIn();
+    } catch (error) {
+        console.error('Error processing examples:', error);
+
+        resetLoader();
+        video_error.show();
+        selection.show();
+    }
 }
 
 function sendRecord(formData) {
@@ -157,7 +150,7 @@ function sendChat(voice_text = null) {
         },
         body: payload
     }).then(response => response.json()).then(response => {
-        $(`#${answer_id} .chat-content span`).html(generate_answer(response))
+        $(`#${answer_id} .chat-content span`).html(generateAnswer(response))
     });
 }
 
@@ -186,20 +179,25 @@ function addChat(text, answer = false) {
     return id;
 }
 
-function generate_answer(response) {
+function generateAnswer(response) {
     content = response.answer
     if (response.timestamps) {
         content += '<ul class="timings">'
         response.timestamps.forEach((item, index) => {
-            content += `<li onclick="video_position(${item})">Video Position #${index + 1}</li>`
+            content += `<li onclick="videoPosition(${item})">Video Position #${index + 1}</li>`
         })
         content += '</ul>'
     }
     return content
 }
 
-function video_position(time) {
+function videoPosition(time) {
     video_player.attr('src', `https://www.youtube.com/embed/${video_id}?start=${time}&autoplay=1`);
+}
+
+function resetLoader() {
+    video_input.parent().show()
+    selection.find('.loader').hide();
 }
 
 document.getElementById('record').addEventListener('click', function () {
