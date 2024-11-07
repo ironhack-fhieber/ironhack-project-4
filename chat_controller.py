@@ -1,4 +1,5 @@
 import os
+import time
 
 from langchain.callbacks import LangChainTracer
 from langchain.chains import ConversationalRetrievalChain, RetrievalQA
@@ -49,7 +50,10 @@ def process_video(id):
     vectorstore = create_vectorstore(chunks_with_metadata)
     chains = create_chains(vectorstore, tracer)
     examples = create_example_questions(chains['examples'], video_title)
+
+    # Sometimes the model does not find any information, sleep and try again
     if examples.startswith("I'm sorry"):
+        time.sleep(3)
         examples = create_example_questions(chains['examples'], video_title)
 
     return chains['questions'], video_title, examples

@@ -140,8 +140,6 @@ function sendChat(voice_text = null) {
 
     addChat(question)
     const answer_id = addChat('', true)
-    question_input.get(0).scrollIntoView({behavior: 'smooth'});
-
     const payload = JSON.stringify({id: video_id, chatter: chatter, question: question});
     fetch(`question`, {
         method: 'POST',
@@ -151,6 +149,7 @@ function sendChat(voice_text = null) {
         body: payload
     }).then(response => response.json()).then(response => {
         $(`#${answer_id} .chat-content span`).html(generateAnswer(response))
+        scrollDown();
     });
 }
 
@@ -176,6 +175,8 @@ function addChat(text, answer = false) {
 
     // Append the generated HTML to the chat container
     $('.chats').append(chatHTML);
+    scrollDown();
+
     return id;
 }
 
@@ -191,8 +192,13 @@ function generateAnswer(response) {
     return content
 }
 
+function scrollDown() {
+    question_input.get(0).scrollIntoView({behavior: 'smooth'});
+}
+
 function videoPosition(time) {
     video_player.attr('src', `https://www.youtube.com/embed/${video_id}?start=${time}&autoplay=1`);
+    $('#sidebar').get(0).scrollIntoView({behavior: 'smooth'});
 }
 
 function resetLoader() {
@@ -249,4 +255,3 @@ document.getElementById('record').addEventListener('click', function () {
         $('.recorder button').attr('disabled', true)
     });
 });
-
