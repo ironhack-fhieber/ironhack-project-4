@@ -150,7 +150,7 @@ def create_chains(vectorstore, tracer):
               and 'examples' for example creation.
     """
 
-    llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.2, n=3)
+    llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.2)
 
     # Set up chat memory
     conversational_memory = ConversationBufferWindowMemory(
